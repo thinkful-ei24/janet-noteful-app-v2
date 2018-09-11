@@ -70,13 +70,16 @@ router.put('/:id', (req, res, next) => {
     return next(err);
   }
 
-  notes.update(id, updateObj)
-    .then(item => {
-      if (item) {
-        res.json(item);
-      } else {
-        next();
+  knex
+    .select('notes.id', 'title', 'content')
+    .from('notes')
+    .modify(queryBuilder => {
+      if (updateObj.title) {
+        queryBuilder.where({id: `${id}`}).update({title: `${updateObj.title}`, content: `${updateObj.content}` });
       }
+    }).returning(['id', 'title', 'content'])
+    .then(results => {
+      res.json(results);
     })
     .catch(err => {
       next(err);
