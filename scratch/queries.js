@@ -36,9 +36,50 @@ knex
       .catch(err => {
         console.error(err);
       });
-    
-
+  })
+  .then (results => {
+    let id = 5;
+    knex
+      .first('notes.id', 'title', 'content')
+      .from('notes')
+      .where({id: `${id}`})
+      .then((results)=> console.log(JSON.stringify(results)));
+  })
+  .then(results => {
+    let title= 'Hello';
+    let content= 'HELLO THIS IS NEW STUFF';
+    let id = 7;
+    knex
+      .select('notes.id', 'title', 'content')
+      .from('notes')
+      .modify(queryBuilder => {
+        if (title && content) {
+          queryBuilder.where({id: `${id}`}).update({title: `${title}`, content: `${content}` });
+        }
+      }).returning(['id', 'title', 'content'])
+      .then(results => {
+        console.log(JSON.stringify(results[0]));
+      });
+  }).then(results => {
+    const newNote = {title: 'Dogs are the best', content: 'Dogs are much better companions than cats'};
+    knex
+      .select('notes.id', 'title', 'content')
+      .from('notes')
+      .modify(queryBuilder => {
+        if (newNote.title && newNote.content) {
+          queryBuilder.insert({title: `${newNote.title}`, content: `${newNote.content}`});
+        }
+      }).returning(['id', 'title', 'content'])
+      .then(results =>  console.log(JSON.stringify(results[0])));
+  }).then(results => {
+    const id = 8;
+    knex
+      .select('notes.id', 'title', 'content')
+      .from('notes')
+      .modify(queryBuilder => {
+        if (typeof id === 'number') {
+          queryBuilder.where({id: `${id}`}).del();
+        }
+      }).returning('title')
+      .then(results => console.log("Deleted" +JSON.stringify(results)));
   });
-  
-
-
