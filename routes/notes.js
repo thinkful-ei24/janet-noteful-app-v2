@@ -10,7 +10,8 @@ const router = express.Router();
 // const simDB = require('../db/simDB');
 // const notes = simDB.initialize(data);
 
-const knex = require('../knex')
+//db table is called 'notes'. DB is noteful-app from user dev
+const knex = require('../knex');
 // Get All (and search by query)
 router.get('/', (req, res, next) => {
   const { searchTerm } = req.query;
@@ -34,18 +35,18 @@ router.get('/', (req, res, next) => {
 // Get a single item
 router.get('/:id', (req, res, next) => {
   const id = req.params.id;
-
-  notes.find(id)
-    .then(item => {
-      if (item) {
-        res.json(item);
-      } else {
-        next();
-      }
+  
+  knex
+    .first('notes.id', 'title', 'content')
+    .from('notes')
+    .where({id: `${id}`})
+    .then(results => {
+      res.json(results);
     })
     .catch(err => {
       next(err);
-    });
+    });``
+
 });
 
 // Put update an item
