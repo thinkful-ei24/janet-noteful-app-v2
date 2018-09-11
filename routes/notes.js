@@ -45,7 +45,7 @@ router.get('/:id', (req, res, next) => {
     })
     .catch(err => {
       next(err);
-    });``
+    });'';
 
 });
 
@@ -98,12 +98,21 @@ router.post('/', (req, res, next) => {
     return next(err);
   }
 
-  notes.create(newItem)
-    .then(item => {
-      if (item) {
-        res.location(`http://${req.headers.host}/notes/${item.id}`).status(201).json(item);
+  knex
+    .select('notes.id', 'title', 'content')
+    .from('notes')
+    .modify(queryBuilder => {
+      if (newItem.title) {
+        queryBuilder.insert({title: `${newItem.title}`, content: `${newItem.content}`});
       }
-    })
+    }).returning(['id', 'title', 'content'])
+    .then(results => res.location(`http://${req.headers.host}/notes/${newItem.id}`).status(201).json(newItem))
+  // notes.create(newItem)
+  //   .then(item => {
+  //     if (item) {
+  //       res.location(`http://${req.headers.host}/notes/${item.id}`).status(201).json(item);
+  //     }
+  //   })
     .catch(err => {
       next(err);
     });
