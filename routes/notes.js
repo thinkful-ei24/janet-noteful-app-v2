@@ -57,16 +57,16 @@ router.get('/', (req, res, next) => {
 router.get('/:id', (req, res, next) => {
   const id = req.params.id;
   
-  knex
-    .first('notes.id', 'title', 'content')
+  knex.select('notes.id', 'title', 'content', 'folders.id as folderId', 'folders.name as folderName')
     .from('notes')
-    .where({id: `${id}`})
+    .leftJoin('folders', 'notes.folder_id', 'folders.id')
+    .where({'notes.id':`${id}`})
     .then(results => {
       res.json(results);
     })
     .catch(err => {
       next(err);
-    });'';
+    });
 
 });
 
