@@ -16,21 +16,8 @@ const knex = require('../knex');
 router.get('/', (req, res, next) => {
   const { searchTerm } = req.query;
   const {folderId} = req.query;
+ 
 
-  // knex.select('id', 'title', 'content')
-  //   .from('notes')
-  //   .modify(function (queryBuilder) {
-  //     if (searchTerm) {
-  //       queryBuilder.where('title', 'like', `%${searchTerm}%`);
-  //     }
-  //   })
-  //   .orderBy('notes.id')
-  //   .then(results => {
-  //     res.json(results);
-  //   })
-  //   .catch(err => {
-  //     next(err);
-  //   });
 
   knex.select('notes.id', 'title', 'content', 'folders.id as folderId', 'folders.name as folderName')
     .from('notes')
@@ -62,7 +49,7 @@ router.get('/:id', (req, res, next) => {
     .leftJoin('folders', 'notes.folder_id', 'folders.id')
     .where({'notes.id':`${id}`})
     .then(results => {
-      res.json(results);
+      res.json(results[0]);
     })
     .catch(err => {
       next(err);
@@ -70,48 +57,24 @@ router.get('/:id', (req, res, next) => {
 
 });
 
-// Put update an item
-router.put('/:id', (req, res, next) => {
-  const id = req.params.id;
 
-  /***** Never trust users - validate input *****/
-  const updateObj = {};
-  const updateableFields = ['title', 'content'];
+/* ========== INSERT A SINGLE ITEM ========== */
 
-  updateableFields.forEach(field => {
-    if (field in req.body) {
-      updateObj[field] = req.body[field];
-    }
-  });
 
-  /***** Never trust users - validate input *****/
-  if (!updateObj.title) {
-    const err = new Error('Missing `title` in request body');
-    err.status = 400;
-    return next(err);
-  }
-
-  knex
-    .select('notes.id', 'title', 'content')
-    .from('notes')
-    .modify(queryBuilder => {
-      if (updateObj.title) {
-        queryBuilder.where({id: `${id}`}).update({title: `${updateObj.title}`, content: `${updateObj.content}` });
-      }
-    }).returning(['id', 'title', 'content'])
-    .then(results => {
-      res.json(results);
-    })
-    .catch(err => {
-      next(err);
-    });
-});
 
 // Post (insert) an item
 router.post('/', (req, res, next) => {
-  const { title, content } = req.body;
+  const { title, content, folderId } = req.body; // Add `folderId` to object destructure
 
-  const newItem = { title, content };
+  //const newItem = { title, content, folderID };
+
+  const newItem = {
+    title: title,
+    content: content,
+    folder_id: folderId  // Add `folderId`
+  };
+
+ 
   /***** Never trust users - validate input *****/
   if (!newItem.title) {
     const err = new Error('Missing `title` in request body');
@@ -119,27 +82,84 @@ router.post('/', (req, res, next) => {
     return next(err);
   }
 
-  knex
-    .select('notes.id', 'title', 'content')
-    .from('notes')
-    .modify(queryBuilder => {
-      if (newItem.title) {
-        queryBuilder.insert({title: `${newItem.title}`, content: `${newItem.content}`});
-      }
-    }).returning(['id', 'title', 'content'])
-    .then(results => res.location(`http://${req.headers.host}/notes/${newItem.id}`).status(201).json(newItem))
-  // notes.create(newItem)
-  //   .then(item => {
-  //     if (item) {
-  //       res.location(`http://${req.headers.host}/notes/${item.id}`).status(201).json(item);
+  let noteId;
+  // Insert new note, instead of returning all the fields, just return the new `id`
+  knex.insert(newItem)
+    .into('notes')
+    .returning('id')
+    .then(([id]) => {
+      noteId = id;
+      // Using the new id, select the new note and the folder
+      return knex.select('notes.id', 'title', 'content', 'folder_id as folderId', 'folders.name as folderName')
+        .from('notes')
+        .leftJoin('folders', 'notes.folder_id', 'folders.id')
+        .where('notes.id', noteId);
+    })
+    .then(([result]) => {
+      res.location(`${req.originalUrl}/${result.id}`).status(201).json(result);
+    })
+    .catch(err => next(err));
+});
+/* ========== PUT/UPDATE A SINGLE ITEM ========== */
+
+router.put('/:id', (req, res, next) => {
+  const noteId = req.params.id;
+  const { title, content, folderId } = req.body;
+
+  const updateItem = {
+    title: title,
+    content: content,
+    folder_id: (folderId) ? folderId : null
+  };
+
+  //   /***** Never trust users - validate input *****/
+  //   const updateObj = {};
+  //   const updateableFields = ['title', 'content', 'folderId'];
+
+  //   updateableFields.forEach(field => {
+  //     if (field in req.body) {
+  //       updateObj[field] = req.body[field];
   //     }
-  //   })
+  //   });
+
+  /***** Never trust users - validate input *****/
+  if (!updateItem.title) {
+    const err = new Error('Missing `title` in request body');
+    err.status = 400;
+    return next(err);
+  }
+
+  // /***** Never trust users. Validate input *****/
+  // if (!title) {
+  //   const err = new Error('Missing `title` in request body');
+  //   err.status = 400;
+  //   return next(err);
+  // }
+  knex('notes')
+    .update(updateItem)
+    .where('id', noteId)
+    .returning('id')
+    .then(() => {
+      // Using the noteId, select the note and the folder info
+      return knex.select('notes.id', 'title', 'content', 'folder_id as folderId', 'folders.name as folderName')
+        .from('notes')
+        .leftJoin('folders', 'notes.folder_id', 'folders.id')
+        .where('notes.id', noteId);
+    })
+    .then((result) => {
+      // if (result) {
+      res.json(result[0]);
+      // } 
+      // else {
+      //   next();
+      // }
+    })
     .catch(err => {
       next(err);
     });
 });
 
-// Delete an item
+//============ Delete an item==========================
 router.delete('/:id', (req, res, next) => {
   const id = req.params.id;
   
