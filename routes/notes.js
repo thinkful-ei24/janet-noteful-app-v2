@@ -16,8 +16,24 @@ const knex = require('../knex');
 router.get('/', (req, res, next) => {
   const { searchTerm } = req.query;
 
-  knex.select('id', 'title', 'content')
+  // knex.select('id', 'title', 'content')
+  //   .from('notes')
+  //   .modify(function (queryBuilder) {
+  //     if (searchTerm) {
+  //       queryBuilder.where('title', 'like', `%${searchTerm}%`);
+  //     }
+  //   })
+  //   .orderBy('notes.id')
+  //   .then(results => {
+  //     res.json(results);
+  //   })
+  //   .catch(err => {
+  //     next(err);
+  //   });
+
+  knex.select('notes.id', 'title', 'content', 'folders.id as folderId', 'folders.name as folderName')
     .from('notes')
+    .leftJoin('folders', 'notes.folder_id', 'folders.id')
     .modify(function (queryBuilder) {
       if (searchTerm) {
         queryBuilder.where('title', 'like', `%${searchTerm}%`);
@@ -27,9 +43,8 @@ router.get('/', (req, res, next) => {
     .then(results => {
       res.json(results);
     })
-    .catch(err => {
-      next(err);
-    });
+    .catch(err => next(err));
+
 });
 
 // Get a single item
