@@ -30,23 +30,23 @@ router.put('/:id', (req, res, next) =>{
 //   const updateableFields = ['name'];
   const id = req.params.id;
   const {name}= req.body;
-  const bodyId= req.body.id;
+  //   const bodyId= req.body.id;
   if (!name) {
     const err = new Error('Missing `name` in request body');
     err.status = 400;
     return next(err);
   }
-  if (bodyId!==id) {
-    const err = new Error('Request parameter id does not match the body id.');
-    err.status = 400;
-    return next(err);
-  }
+  //   if (bodyId!==id) {
+  //     const err = new Error('Request parameter id does not match the body id.');
+  //     err.status = 400;
+  //     return next(err);
+  //   }
   knex.select('')
     .from('folders')
     .where ({id: `${id}`})
     .update({name: `${name}`})
     .returning(['id', 'name'])
-    .then(results=> res.json(results))
+    .then(results=> res.json(results[0]))
     .catch(err => {
       next(err);
     });
@@ -71,6 +71,21 @@ router.post('/', (req, res, next) =>{
       next(err);
     });
     
+});
+
+
+// Delete an item
+router.delete('/:id', (req, res, next) => {
+  const id = req.params.id;
+    
+  knex('folders')
+    .where({id: `${id}`}).del()
+    .then(() => {
+      res.sendStatus(204);
+    })
+    .catch(err => {
+      next(err);
+    });
 });
 
 module.exports = router;
