@@ -14,4 +14,17 @@ router.get('/', (req, res, next) =>{
     });
 });
 
+router.get('/:id', (req, res, next) =>{
+  const id = req.params.id;
+  knex.select('')
+    .from('folders')
+    .where ({id: `${id}`})
+    .then(results=> res.json(results))
+    .catch(err => {
+        next(err);
+    });
+
+});
+
+
 module.exports = router;
