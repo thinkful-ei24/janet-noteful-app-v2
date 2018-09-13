@@ -1,6 +1,36 @@
 'use strict';
-// const knex = require('../knex');
-// const jsonNotes = require ('../db/notes.json');
+const knex = require('../knex');
+const jsonNotes = require ('../db/notes.json');
+
+
+
+// const newItem = {
+//   title: 'Hello',
+//   content: 'content',
+//   folder_id: 100 // Add `folderId`
+// };
+// const noteId = 99;
+
+// knex.insert(newItem).into('notes').returning('id')
+//   .then(([id]) => {
+//     // Insert related tags into notes_tags table
+//     const result = [34, 56, 78].map(tagId => ({ note_id: noteId, tag_id: tagId }));
+//     console.log(`insert: ${result} into notes_tags`);
+//   })
+//   .then(() => {
+//     // Select the new note and leftJoin on folders and tags
+//     return knex.select('notes.id', 'title', 'content',
+//       'folders.id as folder_id', 'folders.name as folderName',
+//       'tags.id as tagId', 'tags.name as tagName')
+//       .from('notes')
+//       .leftJoin('folders', 'notes.folder_id', 'folders.id')
+//       .leftJoin('notes_tags', 'notes.id', 'notes_tags.note_id')
+//       .leftJoin('tags', 'tags.id', 'notes_tags.tag_id')
+//       .where('notes.id', noteId);
+//   });
+
+
+
 
 // knex
 //   .schema
