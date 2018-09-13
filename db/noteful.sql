@@ -34,8 +34,7 @@ ALTER SEQUENCE notes_id_seq RESTART WITH 1000;
 
 CREATE TABLE tags (
   id serial PRIMARY KEY,
-  name text NOT NULL UNIQUE,
-  created timestamp DEFAULT now()
+  name text NOT NULL UNIQUE
 );
 
 CREATE TABLE notes_tags (
