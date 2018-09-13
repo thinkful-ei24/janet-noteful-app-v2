@@ -39,13 +39,34 @@ router.put('/:id', (req,res,next) =>{
     return next(err);
   }
 
-
   knex.select()
     .from('tags')
     .where({id: `${tagID}`})
     .update({'name' : `${name}`})
     .returning(['id','name'])
     .then(results=> res.json(results[0]))
+    .catch(err => {
+      next(err);
+    });
+});
+
+//========CREATE NEW TAG=============
+router.post('/', (req,res,next) =>{
+  const {name}= req.body;
+  
+  if (!name) {
+    const err = new Error('Missing `name` in request body');
+    err.status = 400;
+    return next(err);
+  }
+  
+  knex.select()
+    .from('tags')
+    .insert({name:`${name}`})
+    .returning(['id','name'])
+    .then(results=> {
+      res.location(`${req.originalUrl}/${results[0].id}`).status(201).json(results[0]);
+    })
     .catch(err => {
       next(err);
     });
