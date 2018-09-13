@@ -72,5 +72,19 @@ router.post('/', (req,res,next) =>{
     });
 });
 
+//========DELETE A TAG BY ID=============
+
+router.delete('/:id', (req, res, next)=>{
+  const tagID = req.params.id;
+
+  knex('tags')
+    .where({id: `${tagID}`}).del()
+    .then(() => {
+      res.sendStatus(204);
+    })
+    .catch(err => {
+      next(err);
+    });
+});
 
 module.exports = router;
