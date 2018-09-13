@@ -1,27 +1,21 @@
 'use strict';
 
 const express = require('express');
-
 // Create an router instance (aka "mini-app")
 const router = express.Router();
-
-// TEMP: Simple In-Memory Database
-// const data = require('../db/notes');
-// const simDB = require('../db/simDB');
-// const notes = simDB.initialize(data);
-
 //db table is called 'notes'. DB is noteful-app from user dev
 const knex = require('../knex');
-// Get All (and search by query)
+
+//=======Get All (and search by query)=======
 router.get('/', (req, res, next) => {
   const { searchTerm } = req.query;
   const {folderId} = req.query;
  
-
-
-  knex.select('notes.id', 'title', 'content', 'folders.id as folderId', 'folders.name as folderName')
+  knex.select('notes.id', 'title', 'content', 'folders.id as folderId', 'folders.name as folderName', 'tags.id as tagId', 'tags.name as tagName')
     .from('notes')
     .leftJoin('folders', 'notes.folder_id', 'folders.id')
+    .leftJoin('notes_tags', 'note_id', 'notes.id')
+    .leftJoin('tags', 'tags.id', 'tag_id')
     .modify(function (queryBuilder) {
       if (searchTerm) {
         queryBuilder.where('title', 'like', `%${searchTerm}%`);
@@ -40,7 +34,7 @@ router.get('/', (req, res, next) => {
 
 });
 
-// Get a single item
+//========== Get a single item==========
 router.get('/:id', (req, res, next) => {
   const id = req.params.id;
   
@@ -58,11 +52,8 @@ router.get('/:id', (req, res, next) => {
 });
 
 
-/* ========== INSERT A SINGLE ITEM ========== */
+//========== INSERT A SINGLE ITEM ========== //
 
-
-
-// Post (insert) an item
 router.post('/', (req, res, next) => {
   const { title, content, folderId } = req.body; // Add `folderId` to object destructure
 
@@ -100,6 +91,8 @@ router.post('/', (req, res, next) => {
     })
     .catch(err => next(err));
 });
+
+
 /* ========== PUT/UPDATE A SINGLE ITEM ========== */
 
 router.put('/:id', (req, res, next) => {
