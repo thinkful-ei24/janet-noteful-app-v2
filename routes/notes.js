@@ -129,26 +129,19 @@ router.put('/:id', (req, res, next) => {
     return next(err);
   }
 
-  // /***** Never trust users. Validate input *****/
-  // if (!title) {
-  //   const err = new Error('Missing `title` in request body');
-  //   err.status = 400;
-  //   return next(err);
-  // }
   knex('notes')
     .update(updateItem)
     .where('id', noteId)
-    .returning('id')
-    .then(() => {
+    .then((results) => {
       // Using the noteId, select the note and the folder info
       return knex.select('notes.id', 'title', 'content', 'folder_id as folderId', 'folders.name as folderName')
         .from('notes')
         .leftJoin('folders', 'notes.folder_id', 'folders.id')
         .where('notes.id', noteId);
     })
-    .then((result) => {
+    .then((results) => {
       // if (result) {
-      res.json(result[0]);
+      res.json(results[0]);
       // } 
       // else {
       //   next();
