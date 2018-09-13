@@ -9,7 +9,8 @@ const hydrateNotes = require('../utils/hydrateNotes');
 //=======Get All (and search by query)=======
 router.get('/', (req, res, next) => {
   const { searchTerm } = req.query;
-  const {folderId} = req.query;
+  const {folderID} = req.query;
+  const {tagID} = req.query;
  
   knex.select('notes.id', 'title', 'content', 'folders.id as folderId', 'folders.name as folderName', 'tags.id as tagId', 'tags.name as tagName')
     .from('notes')
@@ -22,15 +23,20 @@ router.get('/', (req, res, next) => {
       }
     })
     .modify(function (queryBuilder) {
-      if (folderId) {
-        queryBuilder.where('folder_id', folderId);
+      if (folderID) {
+        queryBuilder.where('folder_id', folderID);
+      }
+    })
+    .modify(function (queryBuilder) {
+      if (tagID) {
+        queryBuilder.where('tag_id', tagID);
       }
     })
     .orderBy('notes.id')
     .then(result => {
       if (result) {
         const hydrated = hydrateNotes(result);
-        res.json(hydrated);
+        res.json(hydrated[0]);
       } else {
         next();
       }
@@ -40,6 +46,7 @@ router.get('/', (req, res, next) => {
 });
 
 //========== Get a single item==========
+// using req.params
 router.get('/:id', (req, res, next) => {
   const id = req.params.id;
   
@@ -49,13 +56,17 @@ router.get('/:id', (req, res, next) => {
     .leftJoin('notes_tags', 'note_id', 'notes.id')
     .leftJoin('tags', 'tags.id', 'tag_id')
     .where({'notes.id':`${id}`})
-    .then(results => {
-      res.json(results[0]);
+    .then(result => {
+      if (result) {
+        const hydrated = hydrateNotes(result);
+        res.json(hydrated[0]);
+      } else {
+        next();
+      }
     })
     .catch(err => {
       next(err);
     });
-
 });
 
 
@@ -104,12 +115,12 @@ router.post('/', (req, res, next) => {
 
 router.put('/:id', (req, res, next) => {
   const noteId = req.params.id;
-  const { title, content, folderId } = req.body;
+  const { title, content, folderID } = req.body;
 
   const updateItem = {
     title: title,
     content: content,
-    folder_id: (folderId) ? folderId : null
+    folder_id: (folderID) ? folderID : null
   };
 
   //   /***** Never trust users - validate input *****/
