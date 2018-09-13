@@ -1,4 +1,6 @@
-function hydrateNotes(input) {
+'use strict';
+
+const  hydrateNotes= function(input) {
   const hydrated = [], lookup = {};
   for (let note of input) {
     if (!lookup[note.id]) {
@@ -17,4 +19,7 @@ function hydrateNotes(input) {
     delete lookup[note.id].tagName;
   }
   return hydrated;
-}
+};
+
+
+module.exports = hydrateNotes;

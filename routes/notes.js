@@ -1,10 +1,10 @@
 'use strict';
 
 const express = require('express');
-// Create an router instance (aka "mini-app")
 const router = express.Router();
 //db table is called 'notes'. DB is noteful-app from user dev
 const knex = require('../knex');
+const hydrateNotes = require('../utils/hydrateNotes');
 
 //=======Get All (and search by query)=======
 router.get('/', (req, res, next) => {
@@ -27,8 +27,13 @@ router.get('/', (req, res, next) => {
       }
     })
     .orderBy('notes.id')
-    .then(results => {
-      res.json(results);
+    .then(result => {
+      if (result) {
+        const hydrated = hydrateNotes(result);
+        res.json(hydrated);
+      } else {
+        next();
+      }
     })
     .catch(err => next(err));
 
