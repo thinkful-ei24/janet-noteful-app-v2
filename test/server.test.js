@@ -133,9 +133,19 @@ describe('Noteful API', function () {
 
 
     it('should return an empty array for an incorrect searchTerm', function () {
-
+      const search = '?searchTerm=data';
+      return chai.request(app)
+        .get(`/api/notes/${search}`)
+        .then(function(res){
+          expect(res).to.have.status(200);
+          expect(res.body).to.be.a('array');
+          const blankArray = [];
+          const expectedAnswer = blankArray[0];
+          res.body.forEach(function(array){
+            expect(array).to.equal(expectedAnswer);
+          });
+        });
     });
-
   });
 
   //=========GET api/:id============
