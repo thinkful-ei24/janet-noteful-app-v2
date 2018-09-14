@@ -139,11 +139,7 @@ describe('Noteful API', function () {
         .then(function(res){
           expect(res).to.have.status(200);
           expect(res.body).to.be.a('array');
-          const blankArray = [];
-          const expectedAnswer = blankArray[0];
-          res.body.forEach(function(array){
-            expect(array).to.equal(expectedAnswer);
-          });
+          expect(res.body).to.have.lengthOf(0);
         });
     });
   });
@@ -152,9 +148,23 @@ describe('Noteful API', function () {
 
   describe('GET /api/notes/:id', function () {
 
-    it('should return correct note when given an id', function () {
+    it.only('should return correct note when given an id', function () {
 
+      
+
+      let noteId;
+      return chai.request(app)
+        .get('/api/notes/')
+        .then(function(res){
+          noteId = res.body[0].id;
+          return chai.request(app)
+            .get(`/api/notes/${noteId}`)
+            .then(function(res){
+              expect(res).to.have.status(200);
+            });
+        });
     });
+      
 
     it('should respond with a 404 for an invalid id', function () {
 
