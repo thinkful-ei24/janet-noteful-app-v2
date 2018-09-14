@@ -126,6 +126,7 @@ describe('Noteful API', function () {
           const expectedKeys = ['id', 'title', 'content'];
           res.body.forEach(function(note){
             expect(note).to.be.a('object');
+            expect(note).to.include.keys(expectedKeys);
           });
         });
     });
