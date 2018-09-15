@@ -88,6 +88,7 @@ router.post('/', (req, res, next) => {
   //const tags = req.body.tags || [];
   //const newItem = { title, content, folderID };
 
+   //found bug with notes router. Need to fix so user can create a new note and attach folder from the get go
   const newItem = {
     title: title,
     content: content,
@@ -145,7 +146,7 @@ router.put('/:id', (req, res, next) => {
   const noteId = req.params.id;
   const { title, content, folderId } = req.body;
   const tags = req.body.tags || [];
-
+  //need to fix notes router tp update folders and tags
 
   const updateItem = {
     title: title,
@@ -156,7 +157,7 @@ router.put('/:id', (req, res, next) => {
   /***** Never trust users - validate input *****/
   if (!updateItem.title) {
     const err = new Error('Missing `title` in request body');
-    err.status = 400;
+    err.status = 404;
     return next(err);
   }
 
