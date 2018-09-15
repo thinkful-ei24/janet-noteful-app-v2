@@ -48,9 +48,16 @@ router.get('/', (req, res, next) => {
 // //========== Get a single item==========
 // using req.params
 router.get('/:id', (req, res, next) => {
-  console.log("+++++++++++++++++++++++++++++++++")
+  // console.log("+++++++++++++++++++++++++++++++++")
   const noteId = req.params.id;
   
+  if (isNaN(noteId)){
+    const err = new Error('Note Id is not a number');
+    err.status = 404;
+    return next(err);
+  }
+
+
   knex.select('notes.id', 'title', 'content', 'folders.id as folderId', 'folders.name as folderName', 'tags.id as tagId', 'tags.name as tagName')
     .from('notes')
     .leftJoin('folders', 'notes.folder_id', 'folders.id')
@@ -61,8 +68,8 @@ router.get('/:id', (req, res, next) => {
       if (result) {
         const hydrated = hydrateNotes(result);
         res.json(hydrated[0]);
-        console.log("===============================")
-        console.log(hydrated);
+        // console.log("===============================")
+        // console.log(hydrated);
       } else {
         next();
       }

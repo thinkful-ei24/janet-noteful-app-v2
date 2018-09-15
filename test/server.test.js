@@ -148,7 +148,7 @@ describe('Noteful API', function () {
 
   describe('GET /api/notes/:id', function () {
 
-    it.only('should return correct note when given an id', function () {
+    it('should return correct note when given an id', function () {
 
       
 
@@ -161,13 +161,22 @@ describe('Noteful API', function () {
             .get(`/api/notes/${noteId}`)
             .then(function(res){
               expect(res).to.have.status(200);
+              expect(res.body.id).to.equal(noteId);
             });
         });
     });
       
 
-    it('should respond with a 404 for an invalid id', function () {
-
+    it.only('should respond with a 404 for an invalid id', function () {
+      let noteIDs=['100a', 'abcd', 'a111'];
+     
+      noteIDs.forEach(function(noteId){
+        return chai.request(app)
+          .get(`/api/notes/${noteId}`)
+          .then(function(res){
+            expect(res).to.have.status(404);
+          });
+      });
     });
 
   });
