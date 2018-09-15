@@ -167,7 +167,7 @@ describe('Noteful API', function () {
     });
       
 
-    it.only('should respond with a 404 for an invalid id', function () {
+    it('should respond with a 404 for an invalid id', function () {
       let noteIDs=['100a', 'abcd', 'a111'];
      
       noteIDs.forEach(function(noteId){
@@ -184,7 +184,17 @@ describe('Noteful API', function () {
   describe('POST /api/notes', function () {
 
     it('should create and return a new item when provided valid data', function () {
-
+      const newItem = {title: "New Title", content: 'New Content'};
+      return chai.request(app)
+        .post('/api/notes/')
+        .send(newItem)
+        .then(function(res){
+          expect(res).to.have.status(201);
+          expect(res).to.be.json;
+          expect(res).to.be.a('object');
+          expect(res.body).to.include.keys('id', 'title', 'content', 'folder_id', 'folderName', 'tags');
+          expect(res.body.id).to.not.equal(null);
+        });
     });
 
     it('should return an error when missing "title" field', function () {
